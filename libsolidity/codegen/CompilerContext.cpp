@@ -312,6 +312,7 @@ void CompilerContext::appendInlineAssembly(
 
 	ErrorList errors;
 	ErrorReporter errorReporter(errors);
+//	cout << _assembly << endl;
 	auto scanner = make_shared<Scanner>(CharStream(_assembly), "--CODEGEN--");
 	auto parserResult = assembly::Parser(errorReporter).parse(scanner);
 //	cout << assembly::AsmPrinter()(*parserResult) << endl;
