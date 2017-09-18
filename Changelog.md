@@ -5,6 +5,7 @@ Features:
 
 Bugfixes:
  * Parser: Fix source location of VariableDeclarationStatement.
+ * Type Checker: Properly check array length and don't rely on an assertion in code generation.
 
 ### 0.4.17 (2017-09-21)
 

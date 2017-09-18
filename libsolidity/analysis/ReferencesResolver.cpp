@@ -153,6 +153,15 @@ void ReferencesResolver::endVisit(ArrayTypeName const& _typeName)
 			fatalTypeError(length->location(), "Invalid array length, expected integer literal.");
 		else if (lengthType->isNegative())
 			fatalTypeError(length->location(), "Array with negative length specified.");
+		else if (lengthType->bitsRequired() > 256)
+			fatalTypeError(
+				length->location(),
+				"Array length is too large (" +
+				boost::lexical_cast<string>(lengthType->bitsRequired()) +
+				" bits): \"" +
+				lengthType->bigintValue().str() +
+				"\"."
+			);
 		else
 			_typeName.annotation().type = make_shared<ArrayType>(DataLocation::Storage, baseType, lengthType->literalValue(nullptr));
 	}

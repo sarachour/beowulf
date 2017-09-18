@@ -432,6 +432,12 @@ public:
 	/// @returns true if the value is negative.
 	bool isNegative() const { return m_value < 0; }
 
+	/// @retuns the literal value as an unrestricted bigint.
+	bigint bigintValue() const;
+
+	/// @returns the number of bits required to represent this value.
+	unsigned bitsRequired() const;
+
 private:
 	rational m_value;
 

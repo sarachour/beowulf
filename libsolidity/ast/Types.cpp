@@ -36,6 +36,7 @@
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/range/adaptor/sliced.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include <boost/multiprecision/integer.hpp>
 
 #include <limits>
 
@@ -960,8 +961,21 @@ u256 RationalNumberType::literalValue(Literal const*) const
 {
 	// We ignore the literal and hope that the type was correctly determined to represent
 	// its value.
-
 	u256 value;
+	bigint shiftedValue = bigintValue();
+
+	solAssert(shiftedValue <= u256(-1), "Integer constant too large.");
+	solAssert(shiftedValue >= -(bigint(1) << 255), "Number constant too small.");
+
+	if (m_value >= rational(0))
+		value = u256(shiftedValue);
+	else
+		value = s2u(s256(shiftedValue));
+	return value;
+}
+
+bigint RationalNumberType::bigintValue() const
+{
 	bigint shiftedValue; 
 
 	if (!isFractional())
@@ -974,15 +988,12 @@ u256 RationalNumberType::literalValue(Literal const*) const
 		shiftedValue = (m_value.numerator() / m_value.denominator()) * pow(bigint(10), fractionalDigits);
 	}
 
-	// we ignore the literal and hope that the type was correctly determined
-	solAssert(shiftedValue <= u256(-1), "Integer constant too large.");
-	solAssert(shiftedValue >= -(bigint(1) << 255), "Number constant too small.");
+	return shiftedValue;
+}
 
-	if (m_value >= rational(0))
-		value = u256(shiftedValue);
-	else
-		value = s2u(s256(shiftedValue));
-	return value;
+unsigned RationalNumberType::bitsRequired() const
+{
+	return boost::multiprecision::msb(bigintValue());
 }
 
 TypePointer RationalNumberType::mobileType() const
