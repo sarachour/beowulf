@@ -4,6 +4,8 @@ Features:
  * Parser: Better error message for unexpected trailing comma in parameter lists.
 
 Bugfixes:
+ * Type Checker: Properly support overwriting members inherited from ``address`` in a contract
+   (such as ``balance``, ``transfer``, etc.)
 
 ### 0.4.17 (2017-09-21)
 
