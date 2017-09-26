@@ -42,8 +42,8 @@ elif [ -z $CI ]; then
     ETH_PATH="eth"
 else
     mkdir -p /tmp/test
-    wget -O /tmp/test/eth https://github.com/ethereum/cpp-ethereum/releases/download/solidityTester/eth
-    test "$(shasum /tmp/test/eth)" = "c132e8989229e4840831a4fb1a1d058b732a11d5  /tmp/test/eth"
+    wget -O /tmp/test/eth https://github.com/ethereum/cpp-ethereum/releases/download/solidityTester/eth_byzantium
+    test "$(shasum /tmp/test/eth)" = "4fc2959c45ba362144384296e257d65f64adcbca  /tmp/test/eth"
     sync
     chmod +x /tmp/test/eth
     sync # Otherwise we might get a "text file busy" error
