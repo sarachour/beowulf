@@ -1001,6 +1001,7 @@ void CompilerUtils::storeStringData(bytesConstRef _data)
 unsigned CompilerUtils::loadFromMemoryHelper(Type const& _type, bool _fromCalldata, bool _padToWords)
 {
 	unsigned numBytes = _type.calldataEncodedSize(_padToWords);
+	solAssert(numBytes > 0, "");
 	bool isExternalFunctionType = false;
 	if (auto const* funType = dynamic_cast<FunctionType const*>(&_type))
 		if (funType->kind() == FunctionType::Kind::External)
@@ -1054,6 +1055,7 @@ void CompilerUtils::rightShiftNumberOnStack(unsigned _bits, bool _isSigned)
 unsigned CompilerUtils::prepareMemoryStore(Type const& _type, bool _padToWords)
 {
 	unsigned numBytes = _type.calldataEncodedSize(_padToWords);
+	solAssert(numBytes > 0, "");
 	bool leftAligned = _type.category() == Type::Category::FixedBytes;
 	if (numBytes == 0)
 		m_context << Instruction::POP;
