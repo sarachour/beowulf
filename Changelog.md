@@ -2,6 +2,7 @@
 
 Features:
  * Parser: Better error message for unexpected trailing comma in parameter lists.
+ * Code Generator: Use STATICCALL opcode for calling pure functions.
 
 Bugfixes:
 
