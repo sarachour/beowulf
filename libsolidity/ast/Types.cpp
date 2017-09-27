@@ -1616,7 +1616,7 @@ string ContractType::canonicalName() const
 	return m_contract.annotation().canonicalName;
 }
 
-MemberList::MemberMap ContractType::nativeMembers(ContractDefinition const*) const
+MemberList::MemberMap ContractType::nativeMembers(ContractDefinition const* _contract) const
 {
 	// All address members and all interface functions
 	MemberList::MemberMap addressMembers = IntegerType(160, IntegerType::Modifier::Address).nativeMembers(nullptr);
@@ -1662,6 +1662,9 @@ MemberList::MemberMap ContractType::nativeMembers(ContractDefinition const*) con
 				&it.second->declaration()
 			));
 	}
+	// In 0.5.0 address members are not populated into the contract.
+	if (_contract->sourceUnit().annotation().experimentalFeatures.count(ExperimentalFeature::V050))
+		return members;
 	// Add overloads from address only if there is no conflict
 	for (auto it = addressMembers.begin(); it != addressMembers.end(); ++it)
 	{
