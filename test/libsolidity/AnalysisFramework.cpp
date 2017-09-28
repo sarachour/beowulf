@@ -25,6 +25,8 @@
 
 #include <libsolidity/ast/AST.h>
 
+#include <libsolidity/parsing/Scanner.h>
+
 #include <libdevcore/SHA3.h>
 
 #include <boost/test/unit_test.hpp>
@@ -88,9 +90,14 @@ SourceUnit const* AnalysisFramework::parseAndAnalyse(string const& _source)
 {
 	auto sourceAndError = parseAnalyseAndReturnError(_source);
 	BOOST_REQUIRE(!!sourceAndError.first);
-	BOOST_REQUIRE_MESSAGE(!sourceAndError.second,
-		"Unexpected error: " + SourceReferenceFormatter::formatExceptionInformation(*sourceAndError.second, "", {})
-	);
+	string message;
+	if (sourceAndError.second)
+		message = "Unexpected error: " + SourceReferenceFormatter::formatExceptionInformation(
+			*sourceAndError.second,
+			(sourceAndError.second->type() == Error::Type::Warning) ? "Warning" : "Error",
+			[&](string const& _name) { return m_compiler.scanner(_name); }
+		);
+	BOOST_REQUIRE_MESSAGE(!sourceAndError.second, message);
 	return sourceAndError.first;
 }
 
