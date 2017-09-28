@@ -67,9 +67,9 @@ sleep 2
 # And then run the Solidity unit-tests (once without optimization, once with),
 # pointing to that IPC endpoint.
 echo "--> Running tests without optimizer..."
-  "$REPO_ROOT"/build/test/soltest --show-progress -- --ipcpath /tmp/test/geth.ipc && \
+  "$REPO_ROOT"/build/test/soltest --show-progress -- --no-smt --ipcpath /tmp/test/geth.ipc && \
   echo "--> Running tests WITH optimizer..." && \
-  "$REPO_ROOT"/build/test/soltest --show-progress -- --optimize --ipcpath /tmp/test/geth.ipc
+  "$REPO_ROOT"/build/test/soltest --show-progress -- --optimize --no-smt --ipcpath /tmp/test/geth.ipc
 ERROR_CODE=$?
 pkill "$ETH_PID" || true
 sleep 4
