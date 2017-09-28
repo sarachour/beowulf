@@ -88,7 +88,9 @@ SourceUnit const* AnalysisFramework::parseAndAnalyse(string const& _source)
 {
 	auto sourceAndError = parseAnalyseAndReturnError(_source);
 	BOOST_REQUIRE(!!sourceAndError.first);
-	BOOST_REQUIRE(!sourceAndError.second);
+	BOOST_REQUIRE_MESSAGE(!sourceAndError.second,
+		"Unexpected error: " + SourceReferenceFormatter::formatExceptionInformation(*sourceAndError.second, "", {})
+	);
 	return sourceAndError.first;
 }
 
@@ -101,7 +103,7 @@ Error AnalysisFramework::expectError(std::string const& _source, bool _warning, 
 {
 	auto sourceAndError = parseAnalyseAndReturnError(_source, _warning, true, _allowMultiple);
 	BOOST_REQUIRE(!!sourceAndError.second);
-	BOOST_REQUIRE(!!sourceAndError.first);
+	BOOST_REQUIRE_MESSAGE(!!sourceAndError.first, "Expected error, but no error happened.");
 	return *sourceAndError.second;
 }
 
