@@ -33,10 +33,14 @@
 #include <libsolidity/codegen/LValue.h>
 #include <libevmasm/GasMeter.h>
 
-using namespace std;
 
 #define BEOWULF
+#ifdef BEOWULF
+#include <libsolidity/beowulf/GrendelLib.h>
+#include <libsolidity/beowulf/BeowulfCompiler.h>
+#endif
 
+using namespace std;
 namespace dev
 {
 namespace solidity
@@ -900,6 +904,17 @@ bool ExpressionCompiler::visit(FunctionCall const& _functionCall)
 			m_context << success;
 			break;
 		}
+    #ifdef BEOWULF 
+    case FunctionType::Kind::BOpen:
+			solAssert(false, "Beowulf: unimplemented open.");
+    case FunctionType::Kind::BClose:
+			solAssert(false, "Beowulf: unimplemented close.");
+    case FunctionType::Kind::BTransferAccount:
+			solAssert(false, "Beowulf: unimplemented transfer-account.");
+    case FunctionType::Kind::BTransferAddress:
+			solAssert(false, "Beowulf: unimplemented transfer-address.");
+
+    #endif
 		default:
 			solAssert(false, "Invalid function type.");
 		}
@@ -1103,8 +1118,13 @@ bool ExpressionCompiler::visit(MemberAccess const& _memberAccess)
 			m_context << Instruction::GASLIMIT;
 		else if (member == "sender")
 			m_context << Instruction::CALLER;
+    #ifndef BEOWULF
 		else if (member == "value")
 			m_context << Instruction::CALLVALUE;
+    #else
+    else if (member == "wallet")
+      BeowulfCompiler::getWallet(m_context);
+    #endif
 		else if (member == "origin")
 			m_context << Instruction::ORIGIN;
 		else if (member == "gas")

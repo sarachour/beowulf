@@ -1115,7 +1115,6 @@ void TypeChecker::endVisit(ExpressionStatement const& _statement)
 	{
 		if (auto callType = dynamic_cast<FunctionType const*>(type(call->expression()).get()))
 		{
-      #ifndef BEOWULF
 			auto kind = callType->kind();
       if (
 				kind == FunctionType::Kind::BareCall ||
@@ -1123,11 +1122,10 @@ void TypeChecker::endVisit(ExpressionStatement const& _statement)
 				kind == FunctionType::Kind::BareDelegateCall
 			)
 				m_errorReporter.warning(_statement.location(), "Return value of low-level calls not used.");
+
+      #ifndef BEOWULF
 			else if (kind == FunctionType::Kind::Send)
 				m_errorReporter.warning(_statement.location(), "Failure condition of 'send' ignored. Consider using 'transfer' instead.");
-      #else
-      (void)(callType);
-      m_errorReporter.typeError(_statement.location(),"Unimplemented: Beowulf handling of send");
       #endif
 
 		}

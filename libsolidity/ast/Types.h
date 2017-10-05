@@ -598,9 +598,10 @@ public:
 	virtual Category category() const override { return Category::Account; }
   virtual std::string identifier() const override;
 	explicit AccountType() {}
+	explicit AccountType(Modifier m) : m_modifier(m) {}
 	unsigned memoryHeadSize() const override { return 32; }
 	virtual unsigned storageBytes() const override { return 32; }
-	virtual bool canLiveOutsideStorage() const override { return false; }
+	virtual bool canLiveOutsideStorage() const override { return false;}
 	virtual bool canBeUsedExternally(bool _inLibrary) const override
   { (void) (_inLibrary); return false; }
 	virtual bool inPrivilegedStorage() const override { return true; }

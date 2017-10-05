@@ -30,6 +30,7 @@
 #include <libsolidity/codegen/LValue.h>
 #include <libsolidity/interface/Exceptions.h>
 
+
 namespace dev {
 namespace eth
 {
@@ -127,7 +128,6 @@ private:
 	bool m_optimize;
 	CompilerContext& m_context;
 	std::unique_ptr<LValue> m_currentLValue;
-
 };
 
 template <class _LValueType, class... _Arguments>

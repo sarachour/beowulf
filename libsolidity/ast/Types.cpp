@@ -1336,7 +1336,7 @@ MemberList::MemberMap AccountType::nativeMembers(ContractDefinition const*) cons
       {"transfer", make_shared<FunctionType>(strings{"address","uint"}, strings(), FunctionType::Kind::BTransferAddress)},
       {"open", make_shared<FunctionType>(strings(), strings(), FunctionType::Kind::BOpen)},
       {"close", make_shared<FunctionType>(strings(), strings(), FunctionType::Kind::BClose)},
-        {"balance", make_shared<FunctionType>(strings(), strings{"uint"}, FunctionType::Kind::BBalance)}
+      {"balance", make_shared<FunctionType>(strings(), strings{"uint"}, FunctionType::Kind::BBalance)}
 		};
 }
 
@@ -3035,7 +3035,11 @@ MemberList::MemberMap MagicType::nativeMembers(ContractDefinition const*) const
 		return MemberList::MemberMap({
 			{"sender", make_shared<IntegerType>(160, IntegerType::Modifier::Address)},
 			{"gas", make_shared<IntegerType>(256)},
-			{"value", make_shared<IntegerType>(256)},
+      #ifndef BEOWULF
+      {"value", make_shared<IntegerType>(256)},
+      #else
+      {"wallet", make_shared<AccountType>(AccountType::Modifier::Wallet)},
+      #endif
 			{"data", make_shared<ArrayType>(DataLocation::CallData)},
 			{"sig", make_shared<FixedBytesType>(4)}
 		});

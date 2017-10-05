@@ -13,7 +13,7 @@ contract PayToPlay {
   account dev_commission;
 
 
-  function PayToPlay() internal {
+  function PayToPlay() {
     dev = msg.sender;
     disabled = false;
     dev_commission.open();
@@ -27,7 +27,7 @@ contract PayToPlay {
       escrow.open();
       msg.wallet.transfer(dev_commission,1);
       msg.wallet.transfer(escrow,10);
-      msg.wallet.transfer(escrow,msg.wallet.balance);
+      msg.wallet.transfer(escrow,msg.wallet.balance());
     }
   }
 
@@ -36,7 +36,7 @@ contract PayToPlay {
     if(bytes(accts[msg.sender].name).length != 0){
       var escrow = accts[msg.sender].escrow;
       escrow.transfer(dev_commission,1);
-      escrow.transfer(msg.sender,escrow.balance);
+      escrow.transfer(msg.sender,escrow.balance());
       escrow.close();
     }
   }
@@ -49,7 +49,7 @@ contract PayToPlay {
 
   function get_commission() public {
     if(msg.sender == dev){
-      dev_commission.transfer(dev,dev_commission.balance);
+      dev_commission.transfer(dev,dev_commission.balance());
     }
   }
 

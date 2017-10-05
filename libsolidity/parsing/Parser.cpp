@@ -899,7 +899,12 @@ ASTPointer<Statement> Parser::parseStatement()
 		break;
 	}
 	case Token::Assembly:
+    #ifndef BEOWULF
 		return parseInlineAssembly(docString);
+    #else
+    fatalParserError("Inline assembly unsupported with Beowulf enabled.");
+    break;
+    #endif
 	case Token::Identifier:
 		if (m_insideModifier && m_scanner->currentLiteral() == "_")
 		{
