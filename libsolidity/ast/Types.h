@@ -39,6 +39,8 @@
 #include <map>
 #include <set>
 
+#define BEOWULF
+
 namespace dev
 {
 namespace solidity
@@ -52,7 +54,7 @@ using TypePointers = std::vector<TypePointer>;
 using rational = boost::rational<dev::bigint>;
 
 
-enum class DataLocation { Storage, CallData, Memory };
+ enum class DataLocation { Storage, CallData, Memory };
 
 /**
  * Helper class to compute storage offsets of members of structs and contracts.
@@ -140,8 +142,8 @@ class Type: private boost::noncopyable, public std::enable_shared_from_this<Type
 public:
 	enum class Category
 	{
-		Integer, RationalNumber, StringLiteral, Bool, FixedPoint, Array,
-		FixedBytes, Contract, Struct, Function, Enum, Tuple,
+		Integer, RationalNumber, StringLiteral, Bool, Account, FixedPoint, Array,
+    FixedBytes, Contract, Struct, Function, Enum, Tuple, 
 		Mapping, TypeType, Modifier, Magic, Module,
 		InaccessibleDynamic
 	};
@@ -215,6 +217,7 @@ public:
 	virtual bool canBeStored() const { return true; }
 	/// Returns false if the type cannot live outside the storage, i.e. if it includes some mapping.
 	virtual bool canLiveOutsideStorage() const { return true; }
+	virtual bool inPrivilegedStorage() const { return false; }
 	/// Returns true if the type can be stored as a value (as opposed to a reference) on the stack,
 	/// i.e. it behaves differently in lvalue context and in value context.
 	virtual bool isValueType() const { return false; }
@@ -338,6 +341,8 @@ private:
 	int m_bits;
 	Modifier m_modifier;
 };
+
+
 
 /**
  * A fixed point type number (signed, unsigned).
@@ -582,6 +587,38 @@ protected:
 	bool m_isPointer = true;
 };
 
+#ifdef BEOWULF 
+class AccountType: public Type
+{
+public:
+  enum class Modifier
+	{
+    Transient, Persistent, Wallet
+  };
+	virtual Category category() const override { return Category::Account; }
+  virtual std::string identifier() const override;
+	explicit AccountType() {}
+	unsigned memoryHeadSize() const override { return 32; }
+	virtual unsigned storageBytes() const override { return 32; }
+	virtual bool canLiveOutsideStorage() const override { return false; }
+	virtual bool canBeUsedExternally(bool _inLibrary) const override
+  { (void) (_inLibrary); return false; }
+	virtual bool inPrivilegedStorage() const override { return true; }
+	virtual bool dataStoredIn(DataLocation _location) const override
+  { return _location == DataLocation::Storage; }
+	virtual std::string toString(bool _short) const override;
+	virtual MemberList::MemberMap nativeMembers(ContractDefinition const* _currentScope) const override;
+
+	bool operator==(AccountType const& _other) const
+	{
+    return _other.m_modifier == m_modifier;
+	}
+
+protected:
+  Modifier m_modifier = Modifier::Persistent;
+};
+#endif
+
 /**
  * The type of an array. The flavours are byte array (bytes), statically- (<type>[<length>])
  * and dynamically-sized array (<type>[]).
@@ -723,6 +760,7 @@ private:
 	/// Type of the constructor, @see constructorType. Lazily initialized.
 	mutable FunctionTypePointer m_constructorType;
 };
+
 
 /**
  * The type of a struct instance, there is one distinct type per struct definition.
@@ -867,8 +905,10 @@ public:
 		BareCallCode, ///< CALLCODE without function hash
 		BareDelegateCall, ///< DELEGATECALL without function hash
 		Creation, ///< external call using CREATE
+    #ifndef BEOWULF
 		Send, ///< CALL, but without data and gas
 		Transfer, ///< CALL, but without data and throws on error
+    #endif
 		SHA3, ///< SHA3
 		Selfdestruct, ///< SELFDESTRUCT
 		Revert, ///< REVERT
@@ -890,7 +930,14 @@ public:
 		ByteArrayPush, ///< .push() to a dynamically sized byte array in storage
 		ObjectCreation, ///< array creation using new
 		Assert, ///< assert()
-		Require ///< require()
+    Require, ///< require()
+    #ifdef BEOWULF
+    BTransferAccount,
+    BTransferAddress,
+    BOpen,
+    BClose,
+    BBalance
+    #endif
 	};
 
 	virtual Category category() const override { return Category::Function; }

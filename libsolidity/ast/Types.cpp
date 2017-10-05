@@ -39,6 +39,8 @@
 
 #include <limits>
 
+#define BEOWULF
+
 using namespace std;
 using namespace dev;
 using namespace dev::solidity;
@@ -210,6 +212,10 @@ TypePointer Type::fromElementaryTypeName(ElementaryTypeNameToken const& _type)
 		return make_shared<ArrayType>(DataLocation::Storage);
 	case Token::String:
 		return make_shared<ArrayType>(DataLocation::Storage, true);
+  #ifdef BEOWULF
+  case Token::Account:
+    return make_shared<AccountType>();
+  #endif
 	//no types found
 	default:
 		solAssert(
@@ -484,10 +490,12 @@ MemberList::MemberMap IntegerType::nativeMembers(ContractDefinition const*) cons
 		return {
 			{"balance", make_shared<IntegerType >(256)},
 			{"call", make_shared<FunctionType>(strings(), strings{"bool"}, FunctionType::Kind::BareCall, true, StateMutability::Payable)},
-			{"callcode", make_shared<FunctionType>(strings(), strings{"bool"}, FunctionType::Kind::BareCallCode, true, StateMutability::Payable)},
-			{"delegatecall", make_shared<FunctionType>(strings(), strings{"bool"}, FunctionType::Kind::BareDelegateCall, true)},
-			{"send", make_shared<FunctionType>(strings{"uint"}, strings{"bool"}, FunctionType::Kind::Send)},
+      #ifndef BEOWULF
+      {"callcode", make_shared<FunctionType>(strings(), strings{"bool"}, FunctionType::Kind::BareCallCode, true, StateMutability::Payable)},
+      {"delegatecall", make_shared<FunctionType>(strings(), strings{"bool"}, FunctionType::Kind::BareDelegateCall, true)},
+      {"send", make_shared<FunctionType>(strings{"uint"}, strings{"bool"}, FunctionType::Kind::Send)},
 			{"transfer", make_shared<FunctionType>(strings{"uint"}, strings(), FunctionType::Kind::Transfer)}
+      #endif
 		};
 	else
 		return MemberList::MemberMap();
@@ -1300,6 +1308,39 @@ string ReferenceType::identifierLocationSuffix() const
 		id += "_ptr";
 	return id;
 }
+
+#ifdef BEOWULF 
+string AccountType::identifier() const
+{
+  switch(m_modifier)
+  {
+  case Modifier::Transient:
+    return "transient_account";
+  case Modifier::Wallet:
+    return "wallet_account";
+  case Modifier::Persistent:
+    return "pers_account";
+  }
+}
+
+string AccountType::toString(bool _short) const
+{
+  (void)(_short);
+  return this->identifier();
+}
+
+MemberList::MemberMap AccountType::nativeMembers(ContractDefinition const*) const
+{
+		return {
+      {"transfer", make_shared<FunctionType>(strings{"account","uint"}, strings(), FunctionType::Kind::BTransferAccount)},
+      {"transfer", make_shared<FunctionType>(strings{"address","uint"}, strings(), FunctionType::Kind::BTransferAddress)},
+      {"open", make_shared<FunctionType>(strings(), strings(), FunctionType::Kind::BOpen)},
+      {"close", make_shared<FunctionType>(strings(), strings(), FunctionType::Kind::BClose)},
+        {"balance", make_shared<FunctionType>(strings(), strings{"uint"}, FunctionType::Kind::BBalance)}
+		};
+}
+
+#endif
 
 bool ArrayType::isImplicitlyConvertibleTo(const Type& _convertTo) const
 {
@@ -2289,14 +2330,22 @@ string FunctionType::identifier() const
 	{
 	case Kind::Internal: id += "internal"; break;
 	case Kind::External: id += "external"; break;
-	case Kind::CallCode: id += "callcode"; break;
+  case Kind::CallCode: id += "callcode"; break;
 	case Kind::DelegateCall: id += "delegatecall"; break;
 	case Kind::BareCall: id += "barecall"; break;
 	case Kind::BareCallCode: id += "barecallcode"; break;
 	case Kind::BareDelegateCall: id += "baredelegatecall"; break;
 	case Kind::Creation: id += "creation"; break;
+  #ifndef BEOWULF
 	case Kind::Send: id += "send"; break;
 	case Kind::Transfer: id += "transfer"; break;
+  #else
+  case Kind::BTransferAccount: id += "beo_transfer.acct"; break;
+  case Kind::BTransferAddress: id += "beo_transfer.addr"; break;
+  case Kind::BOpen: id += "beo_open"; break;
+  case Kind::BClose: id += "beo_close"; break;
+  case Kind::BBalance: id += "beo_balance"; break;
+  #endif
 	case Kind::SHA3: id += "sha3"; break;
 	case Kind::Selfdestruct: id += "selfdestruct"; break;
 	case Kind::Revert: id += "revert"; break;
@@ -2456,12 +2505,12 @@ unsigned FunctionType::sizeOnStack() const
 	switch(kind)
 	{
 	case Kind::External:
-	case Kind::CallCode:
+  case Kind::CallCode:
 	case Kind::DelegateCall:
 		size = 2;
 		break;
 	case Kind::BareCall:
-	case Kind::BareCallCode:
+  case Kind::BareCallCode:
 	case Kind::BareDelegateCall:
 	case Kind::Internal:
 	case Kind::ArrayPush:
@@ -2634,9 +2683,16 @@ bool FunctionType::isBareCall() const
 	switch (m_kind)
 	{
 	case Kind::BareCall:
-	case Kind::BareCallCode:
+  case Kind::BareCallCode:
 	case Kind::BareDelegateCall:
-	case Kind::ECRecover:
+  #ifdef BEOWULF
+  case Kind::BTransferAccount:
+  case Kind::BTransferAddress:
+  case Kind::BOpen:
+  case Kind::BClose:
+  case Kind::BBalance:
+  #endif
+  case Kind::ECRecover:
 	case Kind::SHA256:
 	case Kind::RIPEMD160:
 		return true;

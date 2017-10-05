@@ -46,6 +46,8 @@
 #include <libsolidity/interface/Exceptions.h>
 #include <libsolidity/parsing/UndefMacros.h>
 
+#define BEOWULF
+
 namespace dev
 {
 namespace solidity
@@ -138,8 +140,6 @@ namespace solidity
 	T(Dec, "--", 0)                                                    \
 	K(Delete, "delete", 0)                                             \
 	\
-	/* Beowulf*/                                                       \
-	K(Account, "account", 0)                                           \
 	/* Keywords */                                                     \
 	K(Anonymous, "anonymous", 0)                                       \
 	K(As, "as", 0)                                                     \
@@ -194,6 +194,7 @@ namespace solidity
 	K(SubWeek, "weeks", 0)                                             \
 	K(SubYear, "years", 0)                                             \
 	/* type keywords*/                                                 \
+	/* Beowulf*/                                                       \
 	K(Int, "int", 0)                                                   \
 	K(UInt, "uint", 0)                                                 \
 	K(Bytes, "bytes", 0)                                               \
@@ -203,6 +204,7 @@ namespace solidity
 	K(Bool, "bool", 0)                                                 \
 	K(Fixed, "fixed", 0)                                               \
 	K(UFixed, "ufixed", 0)                                             \
+  K(Account, "account", 0)                                           \
 	T(IntM, "intM", 0)                                                 \
 	T(UIntM, "uintM", 0)                                               \
 	T(BytesM, "bytesM", 0)                                             \

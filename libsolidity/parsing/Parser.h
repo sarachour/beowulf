@@ -25,6 +25,7 @@
 #include <libsolidity/ast/AST.h>
 #include <libsolidity/parsing/ParserBase.h>
 
+
 namespace dev
 {
 namespace solidity

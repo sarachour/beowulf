@@ -34,6 +34,7 @@ using namespace std;
 using namespace dev;
 using namespace dev::solidity;
 
+#define BEOWULF
 
 bool TypeChecker::checkTypeRequirements(ASTNode const& _contract)
 {
@@ -1114,8 +1115,9 @@ void TypeChecker::endVisit(ExpressionStatement const& _statement)
 	{
 		if (auto callType = dynamic_cast<FunctionType const*>(type(call->expression()).get()))
 		{
+      #ifndef BEOWULF
 			auto kind = callType->kind();
-			if (
+      if (
 				kind == FunctionType::Kind::BareCall ||
 				kind == FunctionType::Kind::BareCallCode ||
 				kind == FunctionType::Kind::BareDelegateCall
@@ -1123,6 +1125,11 @@ void TypeChecker::endVisit(ExpressionStatement const& _statement)
 				m_errorReporter.warning(_statement.location(), "Return value of low-level calls not used.");
 			else if (kind == FunctionType::Kind::Send)
 				m_errorReporter.warning(_statement.location(), "Failure condition of 'send' ignored. Consider using 'transfer' instead.");
+      #else
+      (void)(callType);
+      m_errorReporter.typeError(_statement.location(),"Unimplemented: Beowulf handling of send");
+      #endif
+
 		}
 	}
 }
@@ -1762,6 +1769,8 @@ bool TypeChecker::visit(MemberAccess const& _memberAccess)
 	{
 		if (auto callType = dynamic_cast<FunctionType const*>(type(_memberAccess).get()))
 		{
+
+      #ifndef BEOWULF
 			auto kind = callType->kind();
 			auto contractType = dynamic_cast<ContractType const*>(exprType.get());
 			solAssert(!!contractType, "Should be contract type.");
@@ -1774,6 +1783,13 @@ bool TypeChecker::visit(MemberAccess const& _memberAccess)
 					_memberAccess.location(),
 					"Value transfer to a contract without a payable fallback function."
 				);
+      #else
+      (void)(callType);
+      m_errorReporter.typeError(
+         _memberAccess.location(),
+         "Unimplemented: handle external transfers."
+      );
+      #endif
 		}
 	}
 

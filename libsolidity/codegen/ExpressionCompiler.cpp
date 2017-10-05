@@ -35,6 +35,8 @@
 
 using namespace std;
 
+#define BEOWULF
+
 namespace dev
 {
 namespace solidity
@@ -622,6 +624,8 @@ bool ExpressionCompiler::visit(FunctionCall const& _functionCall)
 				m_context << Instruction::POP;
 			arguments.front()->accept(*this);
 			break;
+
+    #ifndef BEOWULF
 		case FunctionType::Kind::Send:
 		case FunctionType::Kind::Transfer:
 			_functionCall.expression().accept(*this);
@@ -658,6 +662,7 @@ bool ExpressionCompiler::visit(FunctionCall const& _functionCall)
 				m_context.appendConditionalRevert();
 			}
 			break;
+    #endif 
 		case FunctionType::Kind::Selfdestruct:
 			arguments.front()->accept(*this);
 			utils().convertType(*arguments.front()->annotation().type, *function.parameterTypes().front(), true);
@@ -969,11 +974,13 @@ bool ExpressionCompiler::visit(MemberAccess const& _memberAccess)
 				case FunctionType::Kind::Creation:
 				case FunctionType::Kind::DelegateCall:
 				case FunctionType::Kind::CallCode:
-				case FunctionType::Kind::Send:
 				case FunctionType::Kind::BareCall:
 				case FunctionType::Kind::BareCallCode:
 				case FunctionType::Kind::BareDelegateCall:
+        #ifndef BEOWULF
+        case FunctionType::Kind::Send:
 				case FunctionType::Kind::Transfer:
+        #endif
 					_memberAccess.expression().accept(*this);
 					m_context << funType->externalIdentifier();
 					break;

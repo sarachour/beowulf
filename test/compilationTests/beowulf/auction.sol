@@ -1,65 +1,60 @@
 pragma solidity ^0.4.8;
 contract PayToPlay {
 
-    function assert(bool clause) internal{
-      if(clause == false){
-        throw;
-      }
-    }
-
 
   struct user {
     string name;
     account escrow;
   }
+
   mapping (address => user) accts;
   bool disabled;
   address dev;
   account dev_commission;
 
 
-  function PayToPlay(){
+  function PayToPlay() internal {
     dev = msg.sender;
     disabled = false;
     dev_commission.open();
   }
 
-  function make_acct(string name) payable{
-    if(disabled){throw;}
+  function make_acct(string name) public payable{
+    if(disabled){revert();}
     if(bytes(accts[msg.sender].name).length == 0){
       accts[msg.sender].name = name;
       var escrow = accts[msg.sender].escrow;
-      escrow.open()
-      xfer(msg.wallet,dev_commission,1)
-      xfer(msg.wallet,escrow,10)
-      xfer(msg.wallet,escrow,msg.wallet.balance)
+      escrow.open();
+      msg.wallet.transfer(dev_commission,1);
+      msg.wallet.transfer(escrow,10);
+      msg.wallet.transfer(escrow,msg.wallet.balance);
     }
   }
 
-  function close_acct(){
-    if(disabled){throw;}
+  function close_acct() public {
+    if(disabled){revert();}
     if(bytes(accts[msg.sender].name).length != 0){
       var escrow = accts[msg.sender].escrow;
-      xfer(escrow,dev_commission,1);
-      xfer(escrow,msg.sender,escrow.balance)
-      escrow.close()
+      escrow.transfer(dev_commission,1);
+      escrow.transfer(msg.sender,escrow.balance);
+      escrow.close();
     }
   }
 
-  function disable(){
+  function disable() public {
     if(msg.sender == dev){
       disabled = true;
     }
   }
 
-  function get_commission(){
+  function get_commission() public {
     if(msg.sender == dev){
-      xfer(dev_commission,dev,dev_commission.balance)
+      dev_commission.transfer(dev,dev_commission.balance);
     }
   }
 
-  function (){
-    throw;
+  function () public {
+    revert();
   }
 
 }
