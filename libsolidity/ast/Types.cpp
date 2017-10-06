@@ -1314,8 +1314,6 @@ string AccountType::identifier() const
 {
   switch(m_modifier)
   {
-  case Modifier::Transient:
-    return "transient_account";
   case Modifier::Wallet:
     return "wallet_account";
   case Modifier::Persistent:

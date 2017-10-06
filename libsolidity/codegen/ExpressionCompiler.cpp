@@ -906,14 +906,52 @@ bool ExpressionCompiler::visit(FunctionCall const& _functionCall)
 		}
     #ifdef BEOWULF 
     case FunctionType::Kind::BOpen:
-			solAssert(false, "Beowulf: unimplemented open.");
+    {
+      _functionCall.expression().accept(*this);
+			solAssert(arguments.size() == 0, "");
+      auto targ_typ = BeowulfCompiler::accountFromType(_functionCall.expression().annotation().type.get());
+      BeowulfCompiler::open(m_context,targ_typ,true);
+      break;
+    }
     case FunctionType::Kind::BClose:
-			solAssert(false, "Beowulf: unimplemented close.");
+    {
+      _functionCall.expression().accept(*this);
+			solAssert(arguments.size() == 0, "");
+      auto targ_typ = BeowulfCompiler::accountFromType(_functionCall.expression().annotation().type.get());
+      BeowulfCompiler::close(m_context,targ_typ,true);
+      break;
+    }
+    case FunctionType::Kind::BBalance:
+      {
+        _functionCall.expression().accept(*this);
+        solAssert(arguments.size() == 0, "");
+        auto targ_typ = BeowulfCompiler::accountFromType(_functionCall.expression().annotation().type.get());
+        BeowulfCompiler::balance(m_context,targ_typ);
+        break;
+    }
     case FunctionType::Kind::BTransferAccount:
-			solAssert(false, "Beowulf: unimplemented transfer-account.");
+    {
+      _functionCall.expression().accept(*this);
+      solAssert(arguments.size() == 2, "");
+			arguments[1]->accept(*this);
+			arguments[0]->accept(*this);
+      auto src_typ = BeowulfCompiler::accountFromType(_functionCall.expression().annotation().type.get());
+      auto dst_typ = BeowulfCompiler::accountFromType(arguments[1]->annotation().type.get());
+      BeowulfCompiler::transfer(m_context,src_typ,dst_typ);
+      /*takes two arguments, other account and balance*/
+      break;
+    }
     case FunctionType::Kind::BTransferAddress:
-			solAssert(false, "Beowulf: unimplemented transfer-address.");
-
+    {
+      _functionCall.expression().accept(*this);
+      solAssert(arguments.size() == 2, "");
+			arguments[1]->accept(*this);
+			arguments[0]->accept(*this);
+      auto src_typ = BeowulfCompiler::accountFromType(_functionCall.expression().annotation().type.get());
+      auto dst_typ = BeowulfCompiler::accountFromType(arguments[1]->annotation().type.get());
+      BeowulfCompiler::transfer(m_context,src_typ,dst_typ);
+      break;
+    }
     #endif
 		default:
 			solAssert(false, "Invalid function type.");
@@ -1123,7 +1161,7 @@ bool ExpressionCompiler::visit(MemberAccess const& _memberAccess)
 			m_context << Instruction::CALLVALUE;
     #else
     else if (member == "wallet")
-      BeowulfCompiler::getWallet(m_context);
+      BeowulfCompiler::wallet(m_context);
     #endif
 		else if (member == "origin")
 			m_context << Instruction::ORIGIN;
@@ -1213,6 +1251,13 @@ bool ExpressionCompiler::visit(MemberAccess const& _memberAccess)
 			solAssert(false, "Illegal fixed bytes member.");
 		break;
 	}
+  #ifdef BEOWULF
+  case Type::Category::Account:
+  {
+    solAssert(false,"unimpl: account");
+    break;
+  }
+  #endif
 	default:
 		solAssert(false, "Member access to unknown type.");
 	}

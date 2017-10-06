@@ -593,7 +593,7 @@ class AccountType: public Type
 public:
   enum class Modifier
 	{
-    Transient, Persistent, Wallet
+    Persistent, Wallet
   };
 	virtual Category category() const override { return Category::Account; }
   virtual std::string identifier() const override;
@@ -610,6 +610,7 @@ public:
 	virtual std::string toString(bool _short) const override;
 	virtual MemberList::MemberMap nativeMembers(ContractDefinition const* _currentScope) const override;
 
+  Modifier modifier() const {return m_modifier;}
 	bool operator==(AccountType const& _other) const
 	{
     return _other.m_modifier == m_modifier;
