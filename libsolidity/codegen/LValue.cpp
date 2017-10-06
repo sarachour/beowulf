@@ -145,6 +145,9 @@ StorageItem::StorageItem(CompilerContext& _compilerContext, VariableDeclaration 
 	StorageItem(_compilerContext, *_declaration.annotation().type)
 {
 	auto const& location = m_context.storageLocationOfVariable(_declaration);
+  if(m_context.privilegedVariable(_declaration)){
+    solAssert(false,"cannot directly access privileged variable.");
+  }
 	m_context << location.first << u256(location.second);
 }
 

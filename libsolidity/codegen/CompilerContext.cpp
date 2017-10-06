@@ -38,6 +38,8 @@
 #include <utility>
 #include <numeric>
 
+#define BEOWULF
+
 using namespace std;
 
 namespace dev
@@ -62,12 +64,8 @@ void CompilerContext::addStateVariable(
   bool privileged
 )
 {
-  if(privileged){
-    solAssert(false,"this state variable lives in privileged memory. This feature is unimplemented.");
-  }
-  else{
-    m_stateVariables[&_declaration] = make_pair(_storageOffset, _byteOffset);
-  }
+  m_stateVariables[&_declaration] = make_pair(_storageOffset, _byteOffset);
+  m_stateVariablePrivs[&_declaration] = privileged;
 }
 #endif
 
@@ -234,9 +232,17 @@ unsigned CompilerContext::currentToBaseStackOffset(unsigned _offset) const
 pair<u256, unsigned> CompilerContext::storageLocationOfVariable(const Declaration& _declaration) const
 {
 	auto it = m_stateVariables.find(&_declaration);
-	solAssert(it != m_stateVariables.end(), "Variable not found in storage.");
+	solAssert(it != m_stateVariables.end(), "Privilege: ariable not found in storage.");
 	return it->second;
 }
+#ifdef BEOWULF
+bool CompilerContext::privilegedVariable(const Declaration& _declaration) const
+{
+    auto it = m_stateVariablePrivs.find(&_declaration);
+    solAssert(it != m_stateVariablePrivs.end(), "Privilege: variable not found in storage.");
+    return it->second;
+}
+#endif
 
 CompilerContext& CompilerContext::appendJump(eth::AssemblyItem::JumpType _jumpType)
 {

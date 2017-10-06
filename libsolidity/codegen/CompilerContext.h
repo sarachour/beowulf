@@ -39,6 +39,8 @@
 #include <utility>
 #include <functional>
 
+#define BEOWULF
+
 namespace dev {
 namespace solidity {
 
@@ -136,6 +138,7 @@ public:
 	unsigned currentToBaseStackOffset(unsigned _offset) const;
 	/// @returns pair of slot and byte offset of the value inside this slot.
 	std::pair<u256, unsigned> storageLocationOfVariable(Declaration const& _declaration) const;
+	bool privilegedVariable(Declaration const& _declaration) const;
 
 	/// Appends a JUMPI instruction to a new tag and @returns the tag
 	eth::AssemblyItem appendConditionalJump() { return m_asm->appendJumpI().tag(); }
@@ -290,6 +293,9 @@ private:
 	std::map<ContractDefinition const*, eth::Assembly const*> m_compiledContracts;
 	/// Storage offsets of state variables
 	std::map<Declaration const*, std::pair<u256, unsigned>> m_stateVariables;
+  #ifdef BEOWULF
+	std::map<Declaration const*, bool> m_stateVariablePrivs;
+  #endif
 	/// Offsets of local variables on the stack (relative to stack base).
 	/// This needs to be a stack because if a modifier contains a local variable and this
 	/// modifier is applied twice, the position of the variable needs to be restored
