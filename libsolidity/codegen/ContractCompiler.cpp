@@ -39,6 +39,7 @@ using namespace std;
 using namespace dev;
 using namespace dev::solidity;
 
+#define BEOWULF 
 namespace
 {
 
@@ -427,11 +428,26 @@ void ContractCompiler::appendReturnValuePacker(TypePointers const& _typeParamete
 	}
 }
 
+#ifndef BEOWULF
 void ContractCompiler::registerStateVariables(ContractDefinition const& _contract)
 {
 	for (auto const& var: ContractType(_contract).stateVariables())
 		m_context.addStateVariable(*get<0>(var), get<1>(var), get<2>(var));
 }
+#else
+void ContractCompiler::registerStateVariables(ContractDefinition const& _contract)
+{
+	for (auto const& var: ContractType(_contract).stateVariables()){
+    auto vdecl = get<0>(var);
+    if(vdecl->type().get()->inPrivilegedStorage()){
+      m_context.addStateVariable(*vdecl, get<1>(var), get<2>(var),true);
+    }
+    else{
+      m_context.addStateVariable(*vdecl, get<1>(var), get<2>(var),false);
+    }
+  }
+}
+#endif
 
 void ContractCompiler::initializeStateVariables(ContractDefinition const& _contract)
 {

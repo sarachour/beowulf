@@ -63,7 +63,7 @@ public:
 	/// @returns true if the given feature is enabled.
 	bool experimentalFeatureActive(ExperimentalFeature _feature) const { return m_experimentalFeatures.count(_feature); }
 
-	void addStateVariable(VariableDeclaration const& _declaration, u256 const& _storageOffset, unsigned _byteOffset);
+	void addStateVariable(VariableDeclaration const& _declaration, u256 const& _storageOffset, unsigned _byteOffset, bool privleged);
 	void addVariable(VariableDeclaration const& _declaration, unsigned _offsetToCurrent = 0);
 	void removeVariable(VariableDeclaration const& _declaration);
 

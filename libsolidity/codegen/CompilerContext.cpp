@@ -45,14 +45,31 @@ namespace dev
 namespace solidity
 {
 
+#ifndef BEOWULF
+void CompilerContext::addStateVariable(
+                                       VariableDeclaration const& _declaration,
+                                       u256 const& _storageOffset,
+                                       unsigned _byteOffset,
+                                       )
+  {
+    m_stateVariables[&_declaration] = make_pair(_storageOffset, _byteOffset);
+}
+#else
 void CompilerContext::addStateVariable(
 	VariableDeclaration const& _declaration,
 	u256 const& _storageOffset,
-	unsigned _byteOffset
+	unsigned _byteOffset,
+  bool privileged
 )
 {
-	m_stateVariables[&_declaration] = make_pair(_storageOffset, _byteOffset);
+  if(privileged){
+    solAssert(false,"this state variable lives in privileged memory. This feature is unimplemented.");
+  }
+  else{
+    m_stateVariables[&_declaration] = make_pair(_storageOffset, _byteOffset);
+  }
 }
+#endif
 
 void CompilerContext::startFunction(Declaration const& _function)
 {

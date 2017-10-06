@@ -148,6 +148,7 @@ StorageItem::StorageItem(CompilerContext& _compilerContext, VariableDeclaration 
 	m_context << location.first << u256(location.second);
 }
 
+#ifndef BEOWULF
 StorageItem::StorageItem(CompilerContext& _compilerContext, Type const& _type):
 	LValue(_compilerContext, &_type)
 {
@@ -158,6 +159,21 @@ StorageItem::StorageItem(CompilerContext& _compilerContext, Type const& _type):
 		solAssert(m_dataType->storageSize() == 1, "Invalid storage size.");
 	}
 }
+#else
+StorageItem::StorageItem(CompilerContext& _compilerContext, Type const& _type):
+	LValue(_compilerContext, &_type)
+{
+	if (m_dataType->isValueType())
+    {
+      if (m_dataType->inPrivilegedStorage()){
+        solAssert(false,"Storage Item: privileged type. Unimplemented.");
+      }
+      if (m_dataType->category() != Type::Category::Function)
+        solAssert(m_dataType->storageSize() == m_dataType->sizeOnStack(), "");
+      solAssert(m_dataType->storageSize() == 1, "Invalid storage size.");
+    }
+}
+#endif
 
 void StorageItem::retrieveValue(SourceLocation const&, bool _remove) const
 {
